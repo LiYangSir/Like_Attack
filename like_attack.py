@@ -49,18 +49,25 @@ def show_and_save(data, show=False, path='./output', file_name='fig.png'):
     a1.set_xticks([])
     a1.set_yticks([])
 
-    a2.imshow(np.clip(data['disturb_image'], 0, 1))
-    a2.set_xlabel('disturb_label : {}'.format(data['disturb_label']))
-    a2.set_title('disturb_image')
+    if data['target_label'] is None:
+        fig.suptitle('UnTarget')
+        a2.imshow(np.clip(data['disturb_image'] - data['original_image'], 0, 1))
+        a2.set_title('sub_image')
+    else:
+        fig.suptitle('Target: {} -> {}'.format(data['original_label'], data['target_label']))
+        a2.imshow(np.clip(data['target_image'], 0, 1))
+        a2.set_title('target_image')
+
     a2.set_xticks([])
     a2.set_yticks([])
 
-    a3.imshow(np.clip(data['disturb_image'] - data['original_image'], 0, 1))
-    a3.set_title('substract_image')
+    a3.imshow(np.clip(data['disturb_image'], 0, 1))
+    a3.set_xlabel('disturb_label : {}'.format(data['disturb_label']))
+    a3.set_title('disturb_image')
     a3.set_xticks([])
     a3.set_yticks([])
 
-    fig.suptitle('UnTarget')
+
 
     fig.savefig(os.path.join(path, file_name))
     if show:
@@ -164,6 +171,8 @@ class Like_Attack:
                 data = {
                     'disturb_image': grey_and_rgb(disturb_image[0].cpu().permute(1, 2, 0).numpy()),
                     'disturb_label': int(disturb_label.item()),
+                    'target_image': grey_and_rgb(self.target_image[0].cpu().permute(1, 2, 0).numpy()),
+                    'target_label': int(self.target_label.item()),
                     'original_image': grey_and_rgb(self.original_image[0].cpu().permute(1, 2, 0).numpy()),
                     'original_label': int(self.original_label.item()),
                 }
