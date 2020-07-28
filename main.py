@@ -18,14 +18,14 @@ model_names = sorted(name for name in models.__dict__
 
 parser = argparse.ArgumentParser(description='PyTorch Black Attack')
 parser.add_argument('--data', metavar='DIR', default="./data/", help='path to dataset')
-parser.add_argument('--arch', '-a', metavar='ARCH', default='cifar10', choices=model_names,
+parser.add_argument('--arch', '-a', metavar='ARCH', default='densenet', choices=model_names,
                     help='model architecture: ' + ' | '.join(model_names))
-parser.add_argument('--dataset', default='resnet', help='use pre-trained model')
+parser.add_argument('--dataset', default='cifar10', help='use pre-trained model')
 parser.add_argument('--limited_query', type=int, default=1000, help='limited quety time')
 parser.add_argument('--constraint', type=str, choices=['l2', 'linf'], default='l2')
 parser.add_argument('--attack_type', type=str, choices=['targeted', 'untargeted'], default='untargeted')
 parser.add_argument('--num_samples', type=int, default=10)
-parser.add_argument('--num_classes', type=int, default=1000)
+parser.add_argument('--num_classes', type=int, default=10)
 parser.add_argument('--show_flag', type=bool, default=False)
 parser.add_argument('--num_iterations', type=int, default=30)
 parser.add_argument('--stepsize_search', type=str, choices=['geometric_progression', 'grid_search'],
