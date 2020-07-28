@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from torchvision import models, transforms, datasets
 from utils.generate_model import ImageModel
 from torch import nn
-from torch import optim
+from torch import optim  # 199.232.69.194 140.82.112.3
 
 parser = argparse.ArgumentParser(description='PyTorch Black Attack Test')
 parser.add_argument('--data', metavar='DIR', default="./output", help='path to dataset')
