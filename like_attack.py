@@ -67,11 +67,10 @@ def show_and_save(data, show=False, path='./output', file_name='fig.png'):
     a3.set_xticks([])
     a3.set_yticks([])
 
-
-
     fig.savefig(os.path.join(path, file_name))
     if show:
         plt.show()
+    plt.close(fig)
 
 
 class Like_Attack:
