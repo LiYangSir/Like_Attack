@@ -1,10 +1,8 @@
-import torchvision
 import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-from torchvision.datasets import ImageFolder
 import numpy as np
-from utils.imagenet_dataset import ImageNetDataset
+from dataset.imagenet_dataset import ImageNetDataset
 
 
 class ImageData:

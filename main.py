@@ -1,6 +1,3 @@
-from torchvision import transforms
-from torchvision.datasets import ImageFolder
-from torch.utils.data import DataLoader
 from utils.generate_model import ImageModel
 from utils.load_data import ImageData, split_data
 import argparse
@@ -10,7 +7,7 @@ import models
 import torch
 from like_attack import Like_Attack
 import matplotlib.pyplot as plt
-from generate_video import video
+from utils.generate_video import video
 
 model_names = sorted(name for name in models.__dict__
                      if not name.startswith("__")
@@ -19,9 +16,10 @@ model_names = sorted(name for name in models.__dict__
 
 parser = argparse.ArgumentParser(description='PyTorch Black Attack')
 parser.add_argument('--data', metavar='DIR', default="./data/", help='path to dataset')
-parser.add_argument('--arch', '-a', metavar='ARCH', default='vgg', choices=model_names,
+parser.add_argument('--arch', '-a', metavar='ARCH', default='densenet', choices=model_names,
                     help='model architecture: ' + ' | '.join(model_names))
-parser.add_argument('--dataset', default='mnist', help='use pre-trained model')
+parser.add_argument('--dataset', default='cifar10', help='please choice dataset',
+                    choices=['mnist', 'cifar10', 'imagenet'])
 parser.add_argument('--limited_query', type=int, default=1000, help='limited quety time')
 parser.add_argument('--constraint', type=str, choices=['l2', 'linf'], default='l2')
 parser.add_argument('--attack_type', type=str, choices=['targeted', 'untargeted'], default='targeted')
