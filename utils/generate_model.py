@@ -30,8 +30,8 @@ class ImageModel:
         print("+-------Generate NetWork--------+")
         self.model = models.__dict__['{}_{}'.format(model_name, dataset_name)]()
         print("+---------Load NetWork----------+")
-        state_dict = torch.load(url, map_location=torch.device('cpu'))
-        if model_name.startswith('densenet'):
+        state_dict = torch.load(url)
+        if model_name.startswith('densenet169'):
             state_dict = densenet_load(state_dict)
 
         self.model.load_state_dict(state_dict)
@@ -43,7 +43,7 @@ class ImageModel:
     def predict(self, x):
         if len(x.shape) == 3:
             x = torch.unsqueeze(x, 0)
-        results = torch.zeros(x.shape[0])
+        results = torch.zeros(x.shape[0]).cuda()
         x_split = torch.split(x, 30, 0)
         res = [None] * len(x_split)
 
