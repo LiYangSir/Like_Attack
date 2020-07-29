@@ -56,7 +56,6 @@ def show_and_save(data, show=False, path='./output', file_name='fig.png'):
     a2.set_yticks([])
 
     a3.imshow(np.clip(data['disturb_image'] - data['original_image'], 0, 1))
-    a3.set_xlabel('substract_label : ')
     a3.set_title('substract_image')
     a3.set_xticks([])
     a3.set_yticks([])
@@ -107,9 +106,9 @@ class Like_Attack:
         # if not os.path.exists('./output/{}/result/'.format(self.dataset)):
         #     os.makedirs('./output/{}/{}/result/'.format(self.dataset, self.model.model_name))
         if self.verbose:
-            print("original_label : ", self.original_label.cpu().item())
+            print("original_label : ", int(self.original_label.item()))
             if self.target_label is not None:
-                print("target label : ", self.target_label.cpu().item())
+                print("target label : ", int(self.target_label.item()))
             # scipy.misc.imsave('./output/{}/{}/original.jpg'.format(self.dataset, self.iter),
             #                   grey_and_rgb(self.original_image[0].cpu().permute(1, 2, 0).numpy()))
         disturb_image = self.initialize()
@@ -155,7 +154,7 @@ class Like_Attack:
                 print_data = {
                     'iteration': i,
                     'distance': round(dist.item(), 3),
-                    'disturb_label': disturb_label.item(),
+                    'disturb_label': int(disturb_label.item()),
                     'queries': self.queries,
                     'spend time': round((end_time - start_time), 3)
                 }
@@ -164,9 +163,9 @@ class Like_Attack:
                 # grey_and_rgb(disturb_image[0].cpu().permute(1, 2, 0).numpy()))
                 data = {
                     'disturb_image': grey_and_rgb(disturb_image[0].cpu().permute(1, 2, 0).numpy()),
-                    'disturb_label': disturb_label.item(),
+                    'disturb_label': int(disturb_label.item()),
                     'original_image': grey_and_rgb(self.original_image[0].cpu().permute(1, 2, 0).numpy()),
-                    'original_label': self.original_label.item(),
+                    'original_label': int(self.original_label.item()),
                 }
                 show_and_save(data, show=self.show_flag,
                               path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),

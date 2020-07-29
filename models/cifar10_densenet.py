@@ -39,7 +39,7 @@ def transition(in_channel, out_channel):
 
 
 class densenet(nn.Module):
-    def __init__(self, in_channel=3, num_classes=10, growth_rate=8, block_layers=None):
+    def __init__(self, in_channel=3, num_classes=10, growth_rate=16, block_layers=None):
         super(densenet, self).__init__()
         if block_layers is None:
             block_layers = [6, 12]

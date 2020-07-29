@@ -7,6 +7,8 @@ from concurrent.futures import ThreadPoolExecutor
 from torchvision.models.densenet import _load_state_dict
 import re
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 def densenet_load(state_dict):
     pattern = re.compile(
@@ -30,7 +32,7 @@ class ImageModel:
         print("+-------Generate NetWork--------+")
         self.model = models.__dict__['{}_{}'.format(model_name, dataset_name)]()
         print("+---------Load NetWork----------+")
-        state_dict = torch.load(url)
+        state_dict = torch.load(url, map_location=device)
         if model_name.startswith('densenet169'):
             state_dict = densenet_load(state_dict)
 
@@ -43,7 +45,7 @@ class ImageModel:
     def predict(self, x):
         if len(x.shape) == 3:
             x = torch.unsqueeze(x, 0)
-        results = torch.zeros(x.shape[0]).cuda()
+        results = torch.zeros(x.shape[0]).to(device)
         x_split = torch.split(x, 30, 0)
         res = [None] * len(x_split)
 
