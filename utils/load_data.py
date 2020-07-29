@@ -15,6 +15,10 @@ class ImageData:
             dataset = datasets.CIFAR10(root=path, download=True, transform=transforms.Compose([
                 transforms.ToTensor(),
             ]))
+        elif dataset_name == 'cifar100':
+            dataset = datasets.CIFAR100(root=path, download=True, transform=transforms.Compose([
+                transforms.ToTensor(),
+            ]))
         else:
             dataset = ImageNetDataset(root=path, transform=transforms.Compose([
                 transforms.Resize((255, 255)),

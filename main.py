@@ -16,15 +16,15 @@ model_names = sorted(name for name in models.__dict__
 
 parser = argparse.ArgumentParser(description='PyTorch Black Attack')
 parser.add_argument('--data', metavar='DIR', default="./data/", help='path to dataset')
-parser.add_argument('--arch', '-a', metavar='ARCH', default='densenet', choices=model_names,
+parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet', choices=model_names,
                     help='model architecture: ' + ' | '.join(model_names))
-parser.add_argument('--dataset', default='cifar10', help='please choice dataset',
-                    choices=['mnist', 'cifar10', 'imagenet'])
+parser.add_argument('--dataset', default='cifar100', help='please choice dataset',
+                    choices=['mnist', 'cifar10', 'cifar100', 'imagenet'])
 parser.add_argument('--limited_query', type=int, default=1000, help='limited quety time')
 parser.add_argument('--constraint', type=str, choices=['l2', 'linf'], default='l2')
 parser.add_argument('--attack_type', type=str, choices=['targeted', 'untargeted'], default='targeted')
 parser.add_argument('--num_samples', type=int, default=10)
-parser.add_argument('--num_classes', type=int, default=10)
+parser.add_argument('--num_classes', type=int, default=100)
 parser.add_argument('--show_flag', type=bool, default=False)
 parser.add_argument('--num_iterations', type=int, default=30)
 parser.add_argument('--stepsize_search', type=str, choices=['geometric_progression', 'grid_search'],
@@ -72,6 +72,8 @@ def save(target, disturb, dataset, network):
     if dataset == 'mnist':
         image = torch.cat([grey_and_rgb(target), torch.zeros(1, 3, 28, 8).to(device), grey_and_rgb(disturb)], 3)
     elif dataset == 'cifar10':
+        image = torch.cat([target, torch.zeros(1, 3, 32, 8).to(device), disturb], 3)
+    elif dataset == 'cifar100':
         image = torch.cat([target, torch.zeros(1, 3, 32, 8).to(device), disturb], 3)
     else:
         image = torch.cat([target, torch.zeros(1, 3, 224, 8).to(device), disturb], 3)

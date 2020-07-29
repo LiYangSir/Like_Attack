@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import os
-from config.config import mnist_classes, imagenet_classes, cifar10_classes
+from config.config import mnist_classes, imagenet_classes, cifar10_classes, cifar100_classes
 
 
 def print_format(data):
@@ -31,6 +31,8 @@ def show_and_save(data, dataset, show=False, path='./output', file_name='fig.png
         classes = mnist_classes
     elif dataset == 'cifar10':
         classes = cifar10_classes
+    elif dataset == 'cifar100':
+        classes = cifar100_classes
     else:
         classes = imagenet_classes
 
