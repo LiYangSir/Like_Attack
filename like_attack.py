@@ -2,9 +2,9 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 import torch
 import scipy.misc
-import matplotlib.pyplot as plt
 import os
 import time
+from utils.tools import print_format, grey_and_rgb, show_and_save
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -16,55 +16,8 @@ def compute_distance(original_image, disturb_image, function='l2'):
         return torch.max(abs(original_image - disturb_image))
 
 
-def print_format(data):
-    print("+----------------------+-----------+")
-    print("| parameter            | number    |")
-    print("+----------------------+-----------+")
-    for i in list(data.items()):
-        print("| {:20} | {:<10}|".format(i[0], i[1]))
-    print("+----------------------+-----------+")
-    print()
-
-
 def clamp_image(image, min, max):
     return torch.clamp(image, min, max)
-
-
-def grey_and_rgb(original_image):
-    if original_image.shape[-1] == 1:
-        return np.concatenate((original_image, original_image, original_image), axis=-1)
-    else:
-        return original_image
-
-
-def show_and_save(data, show=False, path='./output', file_name='fig.png'):
-    fig = plt.figure(figsize=(9, 4))
-    a1 = fig.add_subplot(131)
-    a2 = fig.add_subplot(132)
-    a3 = fig.add_subplot(133)
-
-    a1.imshow(np.clip(data['original_image'], 0, 1))
-    a1.set_xlabel('original_label : {}'.format(data['original_label']))
-    a1.set_title('original_image')
-    a1.set_xticks([])
-    a1.set_yticks([])
-
-    a2.imshow(np.clip(data['disturb_image'], 0, 1))
-    a2.set_xlabel('disturb_label : {}'.format(data['disturb_label']))
-    a2.set_title('disturb_image')
-    a2.set_xticks([])
-    a2.set_yticks([])
-
-    a3.imshow(np.clip(data['disturb_image'] - data['original_image'], 0, 1))
-    a3.set_title('substract_image')
-    a3.set_xticks([])
-    a3.set_yticks([])
-
-    fig.suptitle('UnTarget')
-
-    fig.savefig(os.path.join(path, file_name))
-    if show:
-        plt.show()
 
 
 class Like_Attack:
@@ -164,10 +117,12 @@ class Like_Attack:
                 data = {
                     'disturb_image': grey_and_rgb(disturb_image[0].cpu().permute(1, 2, 0).numpy()),
                     'disturb_label': int(disturb_label.item()),
+                    'target_image': grey_and_rgb(self.target_image[0].cpu().permute(1, 2, 0).numpy()),
+                    'target_label': int(self.target_label.item()),
                     'original_image': grey_and_rgb(self.original_image[0].cpu().permute(1, 2, 0).numpy()),
                     'original_label': int(self.original_label.item()),
                 }
-                show_and_save(data, show=self.show_flag,
+                show_and_save(data, self.dataset, show=self.show_flag,
                               path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),
                               file_name='result_{}.png'.format(i))
 

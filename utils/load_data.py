@@ -1,10 +1,8 @@
-import torchvision
 import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-from torchvision.datasets import ImageFolder
 import numpy as np
-from utils.imagenet_dataset import ImageNetDataset
+from dataset.imagenet_dataset import ImageNetDataset
 
 
 class ImageData:
@@ -15,6 +13,10 @@ class ImageData:
             ]))
         elif dataset_name == 'cifar10':
             dataset = datasets.CIFAR10(root=path, download=True, transform=transforms.Compose([
+                transforms.ToTensor(),
+            ]))
+        elif dataset_name == 'cifar100':
+            dataset = datasets.CIFAR100(root=path, download=True, transform=transforms.Compose([
                 transforms.ToTensor(),
             ]))
         else:

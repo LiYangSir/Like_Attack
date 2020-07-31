@@ -4,10 +4,14 @@ import csv
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
+from torchvision.utils import make_grid
 from torchvision import models, transforms, datasets
 from utils.generate_model import ImageModel
 from torch import nn
-from torch import optim  # 199.232.69.194 140.82.112.3
+from torch import optim
+import numpy as np
+from config.config import cifar100_classes
+from matplotlib import pyplot as plt
 
 parser = argparse.ArgumentParser(description='PyTorch Black Attack Test')
 parser.add_argument('--data', metavar='DIR', default="./output", help='path to dataset')
@@ -39,19 +43,24 @@ def print_format(title, number):
     print("| {:20} | {:<10}|".format(title, number))
 
 
+def imshow(img):
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
+
+
 if __name__ == '__main__':
     # dataset = datasets.MNIST(root='./data/', download=True, train=True, transform=transforms.Compose([
-    #     transforms.ToTensor(),
-    # ]))
-    dataset = datasets.CIFAR10(root='./data/', download=True, train=True, transform=transforms.Compose([
-        transforms.ToTensor(),
-    ]))
-    data_loader = DataLoader(dataset, shuffle=True, batch_size=32, num_workers=0)
+    #     transforms.ToTensor()]))
+    dataset = datasets.CIFAR100(root='./data/', download=True, train=True, transform=transforms.Compose([
+        transforms.ToTensor()]))
+    data_loader = DataLoader(dataset, shuffle=False, batch_size=5, num_workers=0)
     target, label = next(iter(data_loader))
-    model = ImageModel("resnet", 'cifar10')
+    classes = [cifar100_classes[i.item()] for i in label]
+    imshow(make_grid(target))
+    model = ImageModel("densenet", "cifar100")
     pred = model.predict(target)
-    print()
-    pass
+    print(model)
 
     # print_format("original_label", 15)
     # generate_csv('./data/imagenet')
