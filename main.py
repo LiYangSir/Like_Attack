@@ -1,8 +1,4 @@
-from utils.generate_model import ImageModel
-from utils.load_data import ImageData, split_data
 import argparse
-import numpy as np
-import scipy.misc
 import models
 from like_attack import LikeAttack
 from utils.generate_video import video
@@ -34,55 +30,6 @@ parser.add_argument('--stepsize_search', type=str, choices=['geometric_progressi
                     default='geometric_progression')
 args = parser.parse_args()
 print(args)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-
-def construct_model_and_data():
-    model = ImageModel(args.arch, args.dataset)
-    loader = ImageData(args.data, args.dataset, num_samples=args.num_samples).data_loader
-    target, label = next(iter(loader))
-    target, label = target.to(device), label.to(device)
-    x_data, y_data = split_data(target, label, model, args.num_classes)
-    result = {'data_model': model,
-              'x_data': x_data,
-              'y_data': y_data,
-              'clip_min': 0.0,
-              'clip_max': 1.0}
-    if args.attack_type == 'targeted':
-        np.random.seed(0)
-        length = y_data.shape[0]
-        idx = [np.random.choice([j for j in range(length) if j != label]) for label in range(length)]
-        result['target_labels'] = y_data[idx]
-        result['target_images'] = x_data[idx]
-
-    return result
-
-
-def imshow(inp):
-    inp = inp.numpy().transpose((1, 2, 0))
-    plt.imshow(inp)
-    plt.show()
-
-
-def grey_and_rgb(original_image):
-    if original_image.shape[1] == 1:
-        return torch.cat((original_image, original_image, original_image), 1)
-    else:
-        return original_image
-
-
-def save(target, disturb, dataset, network):
-    if dataset == 'mnist':
-        image = torch.cat([grey_and_rgb(target), torch.zeros(1, 3, 28, 8).to(device), grey_and_rgb(disturb)], 3)
-    elif dataset == 'cifar10':
-        image = torch.cat([target, torch.zeros(1, 3, 32, 8).to(device), disturb], 3)
-    elif dataset == 'cifar100':
-        image = torch.cat([target, torch.zeros(1, 3, 32, 8).to(device), disturb], 3)
-    else:
-        image = torch.cat([target, torch.zeros(1, 3, 224, 8).to(device), disturb], 3)
-    scipy.misc.imsave('./output/{}/{}/result/{}.jpg'.format(dataset, network, i),
-                      image[0].cpu().numpy().transpose((1, 2, 0)))
-
 
 if __name__ == '__main__':
     result = construct_model_and_data(args)
