@@ -1,7 +1,11 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import os
-from config.config import mnist_classes, imagenet_classes, cifar10_classes, cifar100_classes
+from config.config import *
+import torch
+import scipy.misc
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 def print_format(data):
@@ -44,7 +48,7 @@ def show_and_save(data, dataset, show=False, path='./output', file_name='fig.png
 
     if data['target_label'] is None:
         fig.suptitle('UnTarget')
-        a2.imshow(np.clip(data['disturb_image'] - data['original_image'], 0, 1))
+        a2.imshow(np.clip(1.0 - (data['disturb_image'] - data['original_image']), 0, 1))
         a2.set_title('sub_image')
     else:
         fig.suptitle('Target: From {} To {}'.format(classes[data['original_label']], classes[data['target_label']]))
@@ -65,3 +69,29 @@ def show_and_save(data, dataset, show=False, path='./output', file_name='fig.png
     if show:
         plt.show()
     plt.close(fig)
+
+
+def imshow(inp):
+    inp = inp.numpy().transpose((1, 2, 0))
+    plt.imshow(inp)
+    plt.show()
+
+
+def grey_rgb(original_image):
+    if original_image.shape[1] == 1:
+        return torch.cat((original_image, original_image, original_image), 1)
+    else:
+        return original_image
+
+
+def save(target, disturb, dataset, network):
+    if dataset == 'mnist':
+        image = torch.cat([grey_rgb(target), torch.zeros(1, 3, 28, 8).to(device), grey_rgb(disturb)], 3)
+    elif dataset == 'cifar10':
+        image = torch.cat([target, torch.zeros(1, 3, 32, 8).to(device), disturb], 3)
+    elif dataset == 'cifar100':
+        image = torch.cat([target, torch.zeros(1, 3, 32, 8).to(device), disturb], 3)
+    else:
+        image = torch.cat([target, torch.zeros(1, 3, 224, 8).to(device), disturb], 3)
+    scipy.misc.imsave('./output/{}/{}/result/{}.jpg'.format(dataset, network, i),
+                      image[0].cpu().numpy().transpose((1, 2, 0)))

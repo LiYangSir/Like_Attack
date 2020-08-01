@@ -4,7 +4,7 @@ import torch
 import scipy.misc
 import os
 import time
-from utils.tools import print_format, grey_and_rgb, show_and_save
+from utils.show_or_save import print_format, grey_and_rgb, show_and_save
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -20,12 +20,12 @@ def clamp_image(image, min, max):
     return torch.clamp(image, min, max)
 
 
-class Like_Attack:
+class LikeAttack:
 
     def __init__(self, model, original_image, iter, limited_query=1000, clip_max=1, clip_min=0, constraint='l2',
-                 num_iterations=40, dataset='mnist',
+                 dataset='mnist', rv_generator=None, mask=None,
                  gamma=1.0, target_label=None, target_image=None, stepsize_search='geometric_progression',
-                 max_num_evals=1e4, init_num_evals=10, verbose=True, show_flag=False):
+                 max_num_evals=1e4, init_num_evals=10, verbose=True, show_flag=False, atk_level=None):
         self.model = model
         self.original_image = original_image
         self.iter = iter
@@ -33,8 +33,8 @@ class Like_Attack:
         self.limited_query = limited_query
         self.clip_max = clip_max
         self.clip_min = clip_min
+        self.mask = mask
         self.constraint = constraint
-        self.num_iterations = num_iterations
         self.gamma = gamma
         self.target_label = target_label
         self.target_image = target_image
@@ -47,11 +47,17 @@ class Like_Attack:
         self.shape = original_image.shape
         self.cur_iter = 0
         self.queries = 0
+        self.rv_generator = rv_generator
         self.show_flag = show_flag
+        self.atk_level = atk_level
         if constraint == 'l2':
             self.theta = gamma / (np.sqrt(self.d) * self.d)
         elif constraint == 'linf':
             self.theta = gamma / (self.d ** 2)
+        if mask is None:
+            self.pert_mask = torch.ones(*original_image.shape)
+        else:
+            self.pert_mask = mask
 
     def attack(self):
         if not os.path.exists('./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter)):
@@ -68,7 +74,6 @@ class Like_Attack:
         disturb_image, distance = self.binary_search_batch(disturb_image)
         dist = compute_distance(disturb_image, self.original_image, self.constraint)
         i = -1
-        # for i in range(self.num_iterations):
         while self.queries <= self.limited_query:
             i += 1
             start_time = time.time()
@@ -78,7 +83,7 @@ class Like_Attack:
             num_eval = int(self.init_num_eval * np.sqrt(i + 1))
             num_eval = int(min([num_eval, self.max_num_eval]))
 
-            grad = self.approximate_gradient(disturb_image, num_eval, delta)  # 可能限制溢出
+            grad = self.approximate_gradient(disturb_image, num_eval, delta, atk_level=self.atk_level)  # 可能限制溢出
             if self.queries > self.limited_query:
                 break
 
@@ -117,11 +122,15 @@ class Like_Attack:
                 data = {
                     'disturb_image': grey_and_rgb(disturb_image[0].cpu().permute(1, 2, 0).numpy()),
                     'disturb_label': int(disturb_label.item()),
-                    'target_image': grey_and_rgb(self.target_image[0].cpu().permute(1, 2, 0).numpy()),
-                    'target_label': int(self.target_label.item()),
+                    'target_image': grey_and_rgb(
+                        self.target_image[0].cpu().permute(1, 2, 0).numpy()) if self.target_label is not None else None,
+                    'target_label': int(self.target_label.item()) if self.target_label is not None else None,
                     'original_image': grey_and_rgb(self.original_image[0].cpu().permute(1, 2, 0).numpy()),
                     'original_label': int(self.original_label.item()),
                 }
+                if self.target_label is not None:
+                    data['target_image'] = grey_and_rgb(self.target_image[0].cpu().permute(1, 2, 0).numpy())
+                    data['target_label'] = int(self.target_label.item())
                 show_and_save(data, self.dataset, show=self.show_flag,
                               path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),
                               file_name='result_{}.png'.format(i))
@@ -139,13 +148,11 @@ class Like_Attack:
             epsilon /= 2.0
         return epsilon
 
-    def approximate_gradient(self, sample, num_eval, delta):
-        noise_shape = [num_eval] + list(self.shape[1:])
+    def approximate_gradient(self, sample, num_eval, delta, atk_level=None):
 
-        if self.constraint == 'l2':
-            rv = torch.randn(*noise_shape).to(device)
-        elif self.constraint == 'linf':
-            rv = torch.rand(noise_shape).to(device)
+        rv_raw = self.rv_generator.generate_ps(sample, num_eval, atk_level)  # 增加
+        _mask = torch.cat([self.pert_mask] * num_eval, 0)  # 虚假
+        rv = rv_raw * _mask
 
         rv = rv / torch.sqrt(torch.sum(rv ** 2, dim=(1, 2, 3), keepdim=True))
         disturb_image = sample + delta * rv
