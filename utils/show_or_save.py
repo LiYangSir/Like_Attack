@@ -72,7 +72,7 @@ def show_and_save(data, dataset, show=False, path='./output', file_name='fig.png
 
 
 def imshow(inp):
-    inp = inp.numpy().transpose((1, 2, 0))
+    inp = inp[0].cpu().numpy().transpose((1, 2, 0))
     plt.imshow(inp)
     plt.show()
 

@@ -5,6 +5,7 @@ import scipy.misc
 import os
 import time
 from utils.show_or_save import print_format, grey_and_rgb, show_and_save
+from utils.show_or_save import imshow
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -151,7 +152,7 @@ class LikeAttack:
     def approximate_gradient(self, sample, num_eval, delta, atk_level=None):
 
         rv_raw = self.rv_generator.generate_ps(sample, num_eval, atk_level)  # 增加
-        _mask = torch.cat([self.pert_mask] * num_eval, 0)  # 虚假
+        _mask = torch.cat([self.pert_mask] * num_eval, 0).to(device)  # 虚假
         rv = rv_raw * _mask
 
         rv = rv / torch.sqrt(torch.sum(rv ** 2, dim=(1, 2, 3), keepdim=True))

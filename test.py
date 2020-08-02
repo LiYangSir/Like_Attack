@@ -9,6 +9,8 @@ from torchvision import models, transforms, datasets
 from utils.generate_model import ImageModel
 from torch import nn
 from torch import optim
+import time
+import torch
 import numpy as np
 from config.config import cifar100_classes
 from matplotlib import pyplot as plt
@@ -50,17 +52,20 @@ def imshow(img):
 
 
 if __name__ == '__main__':
+    pass
+
+
     # dataset = datasets.MNIST(root='./data/', download=True, train=True, transform=transforms.Compose([
     #     transforms.ToTensor()]))
-    dataset = datasets.CIFAR100(root='./data/', download=True, train=True, transform=transforms.Compose([
-        transforms.ToTensor()]))
-    data_loader = DataLoader(dataset, shuffle=False, batch_size=5, num_workers=0)
-    target, label = next(iter(data_loader))
-    classes = [cifar100_classes[i.item()] for i in label]
-    imshow(make_grid(target))
-    model = ImageModel("densenet", "cifar100")
-    pred = model.predict(target)
-    print(model)
+    # dataset = datasets.CIFAR100(root='./data/', download=True, train=True, transform=transforms.Compose([
+    #     transforms.ToTensor()]))
+    # data_loader = DataLoader(dataset, shuffle=False, batch_size=5, num_workers=0)
+    # target, label = next(iter(data_loader))
+    # classes = [cifar100_classes[i.item()] for i in label]
+    # imshow(make_grid(target))
+    # model = ImageModel("densenet", "cifar100")
+    # pred = model.predict(target)
+    # print(model)
 
     # print_format("original_label", 15)
     # generate_csv('./data/imagenet')
