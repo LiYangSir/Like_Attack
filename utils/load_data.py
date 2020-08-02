@@ -26,13 +26,13 @@ class ImageData:
                 transforms.ToTensor(),
             ]))
 
-        self.data_loader = DataLoader(dataset, shuffle=True, batch_size=num_samples, num_workers=num_works)
+        self.data_loader = DataLoader(dataset,shuffle=False, batch_size=num_samples, num_workers=num_works)
 
 
 def split_data(x, y, model, num_classes=10):
     pred = model.predict(x)
     correct_idx = y == pred
-    print('Accuracy is {}'.format(np.mean(np.where(correct_idx.cpu().numpy(), 1, 0))))
+    print(f'Accuracy is {np.mean(np.where(correct_idx.cpu().numpy(), 1, 0))}')
     label_pred = pred[correct_idx]
     x, y = x[correct_idx], label_pred
 
