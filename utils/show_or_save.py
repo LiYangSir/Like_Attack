@@ -26,11 +26,11 @@ def grey_and_rgb(original_image):
 
 
 def show_and_save(data, dataset, distance_list, queries_list, show=False, path='./output', file_name='fig.png'):
-    fig = plt.figure(figsize=(12, 4))
-    a1 = fig.add_subplot(141)
-    a2 = fig.add_subplot(142)
-    a3 = fig.add_subplot(143)
-    a4 = fig.add_subplot(144)
+    fig = plt.figure(figsize=(9, 8))
+    a1 = fig.add_subplot(231)
+    a2 = fig.add_subplot(232)
+    a3 = fig.add_subplot(233)
+    a4 = fig.add_subplot(2,3,(4,6))
 
 
     if dataset == 'mnist':
@@ -70,7 +70,7 @@ def show_and_save(data, dataset, distance_list, queries_list, show=False, path='
     a4.plot(queries_list, distance_list)
     a4.set_xlabel("queries")
     a4.set_ylabel("distance")
-    a4.set_xticks([0, 250, 500, 1000])
+    a4.set_xlim([0, 1000])
     # a4.set_ylim([0, 11])
 
     fig.savefig(os.path.join(path, file_name))
