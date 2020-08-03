@@ -5,7 +5,7 @@ from tqdm import tqdm
 import re
 
 
-def video(dataset, network, iter, fps=2, size=(900, 400)):
+def video(dataset, network, iter, fps=2, size=(1200, 400)):
     if not os.path.exists('./output/video/{}/{}/'.format(dataset, network)):
         os.makedirs("./output/video/{}/{}/".format(dataset, network))
 

@@ -15,12 +15,11 @@ class ResizeGenerator(Strategy):
         ps = []
         for _ in range(num_eval):
             shape = inp.shape
-            assert len(shape) == 4 and shape[1] == 3
-            p_small = torch.randn(shape[0], shape[1], int(shape[2] / self.factor), int(shape[3] / self.factor)).to(
-                self.device)
+            # assert len(shape) == 4 and shape[1] == 3
+            p_small = torch.randn(shape[0], shape[1], int(shape[2] / self.factor), int(shape[3] / self.factor))
             transform = transforms.Compose(
                 [transforms.ToPILImage(), transforms.Resize(tuple(shape[2:])), transforms.ToTensor()])
             p_small = transform(p_small[0])
             ps.append(p_small)
-        ps = torch.stack(ps, 0)
+        ps = torch.stack(ps, 0).to(self.device)
         return ps

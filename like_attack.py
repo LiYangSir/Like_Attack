@@ -74,7 +74,11 @@ class LikeAttack:
         disturb_image, distance = self.binary_search_batch(disturb_image)
         dist = compute_distance(disturb_image, self.original_image, self.constraint)
         i = -1
+        distance_data =[]
+        queries_data = []
+
         while self.queries <= self.limited_query:
+
             i += 1
             start_time = time.time()
             self.cur_iter = i + 1
@@ -116,6 +120,8 @@ class LikeAttack:
                     'queries': self.queries,
                     'spend time': round((end_time - start_time), 3)
                 }
+                distance_data.append(dist.item())
+                queries_data.append(self.queries)
                 print_format(print_data)
                 # scipy.misc.imsave('./output/{}/{}/disturb_{}.jpg'.format(self.dataset, self.iter, i),
                 # grey_and_rgb(disturb_image[0].cpu().permute(1, 2, 0).numpy()))
@@ -131,11 +137,13 @@ class LikeAttack:
                 if self.target_label is not None:
                     data['target_image'] = grey_and_rgb(self.target_image[0].cpu().permute(1, 2, 0).numpy())
                     data['target_label'] = int(self.target_label.item())
-                show_and_save(data, self.dataset, show=self.show_flag,
+                show_and_save(data, self.dataset, distance_data, queries_data, show=self.show_flag,
                               path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),
-                              file_name='result_{}.png'.format(i))
-
-        return disturb_image
+                              file_name='result_{}.png'.format(i)
+                              )
+        # show_image(queries_data,distance_data)
+        return disturb_image,distance_data,queries_data
+        # return disturb_image
 
     def geometric_progression_for_stepsize(self, x, update, dist):
         epsilon = dist / np.sqrt(self.cur_iter)
@@ -151,7 +159,7 @@ class LikeAttack:
     def approximate_gradient(self, sample, num_eval, delta, atk_level=None):
 
         rv_raw = self.rv_generator.generate_ps(sample, num_eval, atk_level)  # 增加
-        _mask = torch.cat([self.pert_mask] * num_eval, 0)  # 虚假
+        _mask = torch.cat([self.pert_mask] * num_eval, 0).to(device) # 虚假
         rv = rv_raw * _mask
 
         rv = rv / torch.sqrt(torch.sum(rv ** 2, dim=(1, 2, 3), keepdim=True))

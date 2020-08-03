@@ -25,11 +25,13 @@ def grey_and_rgb(original_image):
         return original_image
 
 
-def show_and_save(data, dataset, show=False, path='./output', file_name='fig.png'):
-    fig = plt.figure(figsize=(9, 4))
-    a1 = fig.add_subplot(131)
-    a2 = fig.add_subplot(132)
-    a3 = fig.add_subplot(133)
+def show_and_save(data, dataset, distance_list, queries_list, show=False, path='./output', file_name='fig.png'):
+    fig = plt.figure(figsize=(12, 4))
+    a1 = fig.add_subplot(141)
+    a2 = fig.add_subplot(142)
+    a3 = fig.add_subplot(143)
+    a4 = fig.add_subplot(144)
+
 
     if dataset == 'mnist':
         classes = mnist_classes
@@ -65,6 +67,12 @@ def show_and_save(data, dataset, show=False, path='./output', file_name='fig.png
     a3.set_xticks([])
     a3.set_yticks([])
 
+    a4.plot(queries_list, distance_list)
+    a4.set_xlabel("queries")
+    a4.set_ylabel("distance")
+    a4.set_xticks([0, 250, 500, 1000])
+    # a4.set_ylim([0, 11])
+
     fig.savefig(os.path.join(path, file_name))
     if show:
         plt.show()
@@ -95,3 +103,10 @@ def save(target, disturb, dataset, network):
         image = torch.cat([target, torch.zeros(1, 3, 224, 8).to(device), disturb], 3)
     scipy.misc.imsave('./output/{}/{}/result/{}.jpg'.format(dataset, network, i),
                       image[0].cpu().numpy().transpose((1, 2, 0)))
+
+# def show_image(queries,distance):
+#     # plt.plot(queries,distance)
+#     # plt.xlabel("Number of Queries")
+#     # plt.ylabel("l2 distance")
+#     # plt.show()
+#     return np.array(queries),np.array(distance)

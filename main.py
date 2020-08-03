@@ -25,7 +25,7 @@ parser.add_argument('--num_classes', type=int, default=100)
 parser.add_argument('--show', default=False, action="store_true")
 parser.add_argument('--threadPool', default=False, action="store_true")
 parser.add_argument('--atk_level', type=int, default=999)
-parser.add_argument('--gradient_strategy', type=str, default="DCT", choices=['resize', 'random', 'DCT'])
+parser.add_argument('--gradient_strategy', type=str, default="resize", choices=['resize', 'random', 'DCT'])
 parser.add_argument('--stepsize_search', type=str, choices=['geometric_progression', 'grid_search'],
                     default='geometric_progression')
 args = parser.parse_args()
@@ -51,7 +51,12 @@ if __name__ == '__main__':
                                  rv_generator=p_gen, gamma=1.0, target_label=target_label, target_image=target_image,
                                  stepsize_search=args.stepsize_search, max_num_evals=1e4, init_num_evals=10,
                                  show_flag=args.show, atk_level=args.atk_level)
-        disturb_image = like_attack.attack()
+        # disturb_image = like_attack.attack()
+        disturb_image,distance_data,queries_data = like_attack.attack()
+        l = np.array(distance_data)
+        k = np.array(queries_data)
+        np.save('npy/vgg_mnist_1000_resize_l2/distance%d.npy' % i, l)
+        np.save('npy/vgg_mnist_1000_resize_l2/queries%d.npy' % i, k)
         # save(target, disturb_image, args.dataset, args.arch)
         print("generate_video...")
         video(args.dataset, args.arch, i)
