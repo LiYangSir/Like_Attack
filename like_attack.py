@@ -19,6 +19,9 @@ def compute_distance(original_image, disturb_image, function='l2'):
 def clamp_image(image, min, max):
     return torch.clamp(image, min, max)
 
+def clamp_image_tensor(image, min, max):
+    return torch.min(torch.max(min, image), max)
+
 
 class LikeAttack:
 
@@ -133,6 +136,10 @@ class LikeAttack:
                     'target_label': int(self.target_label.item()) if self.target_label is not None else None,
                     'original_image': grey_and_rgb(self.original_image[0].cpu().permute(1, 2, 0).numpy()),
                     'original_label': int(self.original_label.item()),
+                    'dataset': self.dataset,
+                    'model_name': self.model.model_name,
+                    'constraint':self.constraint,
+                    'limited_query':self.limited_query
                 }
                 if self.target_label is not None:
                     data['target_image'] = grey_and_rgb(self.target_image[0].cpu().permute(1, 2, 0).numpy())
@@ -214,8 +221,8 @@ class LikeAttack:
     def binary_search_batch(self, disturb_image):
         distance = compute_distance(self.original_image, disturb_image, self.constraint)
         if self.constraint == 'linf':
-            highs = distance
-            threshold = np.minimum(distance * self.theta, self.theta)
+            highs = distance.item()
+            threshold = torch.min(distance * self.theta, torch.tensor(self.theta).to(device)).item()
         else:
             highs = 1.0
             threshold = self.theta
@@ -244,7 +251,7 @@ class LikeAttack:
         if self.constraint == 'l2':
             return (1 - alphas) * self.original_image + alphas * disturb_image
         elif self.constraint == 'linf':
-            return clamp_image(disturb_image, self.original_image - alphas, self.original_image + alphas)
+            return clamp_image_tensor(disturb_image, self.original_image - alphas, self.original_image + alphas)
 
     def decision_function(self, image):
         self.queries += 1
