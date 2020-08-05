@@ -13,19 +13,19 @@ model_names = sorted(name for name in models.__dict__
 
 parser = argparse.ArgumentParser(description='PyTorch Black Attack')
 parser.add_argument('--data', metavar='DIR', default="./data/", help='path to dataset')
-parser.add_argument('--arch', '-a', metavar='ARCH', default='vgg', choices=model_names,
+parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet', choices=model_names,
                     help='model architecture: ' + ' | '.join(model_names))
-parser.add_argument('--dataset', default='mnist', help='please choice dataset',
+parser.add_argument('--dataset', default='cifar100', help='please choice dataset',
                     choices=['mnist', 'cifar10', 'cifar100', 'imagenet'])
 parser.add_argument('--limited_query', type=int, default=1000, help='limited quety time')
-parser.add_argument('--constraint', type=str, choices=['l2', 'linf'], default='l2')
-parser.add_argument('--attack_type', type=str, choices=['targeted', 'untargeted'], default='untargeted')
+parser.add_argument('--constraint', type=str, choices=['l2', 'linf'], default='linf')
+parser.add_argument('--attack_type', type=str, choices=['targeted', 'untargeted'], default='targeted')
 parser.add_argument('--num_samples', type=int, default=10)
 parser.add_argument('--num_classes', type=int, default=100)
 parser.add_argument('--show', default=False, action="store_true")
 parser.add_argument('--threadPool', default=False, action="store_true")
 parser.add_argument('--atk_level', type=int, default=999)
-parser.add_argument('--gradient_strategy', type=str, default="random", choices=['resize', 'random', 'DCT'])
+parser.add_argument('--gradient_strategy', type=str, default="DCT", choices=['resize', 'random', 'DCT'])
 parser.add_argument('--stepsize_search', type=str, choices=['geometric_progression', 'grid_search'],
                     default='geometric_progression')
 args = parser.parse_args()
@@ -55,8 +55,8 @@ if __name__ == '__main__':
         disturb_image,distance_data,queries_data = like_attack.attack()
         l = np.array(distance_data)
         k = np.array(queries_data)
-        np.save('npy/vgg_mnist_1000_random_l2/distance%d.npy' % i, l)
-        np.save('npy/vgg_mnist_1000_random_l2/queries%d.npy' % i, k)
+        np.save('npy/resnet_cifar100_1000_DCT_linf/distance%d.npy' % i, l)
+        np.save('npy/resnet_cifar100_1000_DCT_linf/queries%d.npy' % i, k)
         # save(target, disturb_image, args.dataset, args.arch)
         print("generate_video...")
         video(args.dataset, args.arch, i)
