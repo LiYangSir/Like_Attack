@@ -165,7 +165,7 @@ class LikeAttack:
 
     def approximate_gradient(self, sample, num_eval, delta, atk_level=None):
 
-        rv_raw = self.rv_generator.generate_ps(sample, num_eval, atk_level)  # 增加
+        rv_raw = self.rv_generator.generate_ps(sample, num_eval, atk_level).to(device)  # 增加
         _mask = torch.cat([self.pert_mask] * num_eval, 0).to(device) # 虚假
         rv = rv_raw * _mask
 

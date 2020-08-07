@@ -1,3 +1,4 @@
 from utils.gradient_strategy.dct_generator import DCTGenerator
 from utils.gradient_strategy.resize_generator import ResizeGenerator
 from utils.gradient_strategy.random_generator import RandomGenerator
+from utils.gradient_strategy.centerconv_generator import CenterConvGenerator
