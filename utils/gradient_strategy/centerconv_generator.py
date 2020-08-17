@@ -24,7 +24,7 @@ class CenterConvGenerator(Strategy):
         shape = inp.shape
         h_use, w_use = int(shape[2] / self.factor), int(shape[3] / self.factor)
         p = torch.zeros(num_eval, *shape[1:])
-        p_small = torch.randn(num_eval, shape[1], h_use, w_use)
+        p_small = torch.randn(num_eval, shape[1], h_use, w_use).to(self.device)
         p_small = torch.where(self.mask, p_small, torch.tensor(0.).to(self.device))
         p[:, :, (shape[2] - h_use) // 2: (shape[2] + h_use) // 2,
         (shape[3] - w_use) // 2: (shape[3] + w_use) // 2] = p_small
