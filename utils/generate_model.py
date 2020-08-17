@@ -63,7 +63,8 @@ class ImageModel:
         return results
 
     def _predict(self, x):
-        pred = self.model(x)
-        # pred = torch.softmax(pred, 1)  # 暂时更改
-        pred = torch.argmax(pred, 1)
-        return pred
+        with torch.no_grad():
+            pred = self.model(x)
+            # pred = torch.softmax(pred, 1)  # 暂时更改
+            pred = torch.argmax(pred, 1)
+            return pred

@@ -25,11 +25,13 @@ def grey_and_rgb(original_image):
         return original_image
 
 
-def show_and_save(data, dataset, show=False, path='./output', file_name='fig.png'):
-    fig = plt.figure(figsize=(9, 4))
-    a1 = fig.add_subplot(131)
-    a2 = fig.add_subplot(132)
-    a3 = fig.add_subplot(133)
+def show_and_save(data, dataset, distance_list, queries_list, show=False, path='./output', file_name='fig.png'):
+    fig = plt.figure(figsize=(9, 8))
+    a1 = fig.add_subplot(231)
+    a2 = fig.add_subplot(232)
+    a3 = fig.add_subplot(233)
+    a4 = fig.add_subplot(2,3,(4,6))
+
 
     if dataset == 'mnist':
         classes = mnist_classes
@@ -47,11 +49,11 @@ def show_and_save(data, dataset, show=False, path='./output', file_name='fig.png
     a1.set_yticks([])
 
     if data['target_label'] is None:
-        fig.suptitle('UnTarget')
+        fig.suptitle('UnTarget {} ({} , {}) in Method CENTER'.format(data['constraint'], data['model_name'],data['dataset']))
         a2.imshow(np.clip(1.0 - (data['disturb_image'] - data['original_image']), 0, 1))
         a2.set_title('sub_image')
     else:
-        fig.suptitle('Target: From {} To {}'.format(classes[data['original_label']], classes[data['target_label']]))
+        fig.suptitle('Target: From {} To {} ,{} ({} , {}) in Method CENTER'.format(classes[data['original_label']], classes[data['target_label']], data['constraint'], data['model_name'],data['dataset']))
         a2.imshow(np.clip(data['target_image'], 0, 1))
         a2.set_title('target_image')
         a2.set_xlabel('target_label : {}'.format(classes[data['target_label']]))
@@ -64,6 +66,12 @@ def show_and_save(data, dataset, show=False, path='./output', file_name='fig.png
     a3.set_title('disturb_image')
     a3.set_xticks([])
     a3.set_yticks([])
+
+    a4.plot(queries_list, distance_list, 'b')
+    a4.set_xlabel("queries")
+    a4.set_ylabel("distance")
+    a4.set_xlim([0, 1000])
+    # a4.set_ylim([0, 11])
 
     fig.savefig(os.path.join(path, file_name))
     if show:
@@ -95,3 +103,10 @@ def save(target, disturb, dataset, network):
         image = torch.cat([target, torch.zeros(1, 3, 224, 8).to(device), disturb], 3)
     scipy.misc.imsave('./output/{}/{}/result/{}.jpg'.format(dataset, network, i),
                       image[0].cpu().numpy().transpose((1, 2, 0)))
+
+# def show_image(queries,distance):
+#     # plt.plot(queries,distance)
+#     # plt.xlabel("Number of Queries")
+#     # plt.ylabel("l2 distance")
+#     # plt.show()
+#     return np.array(queries),np.array(distance)

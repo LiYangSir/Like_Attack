@@ -5,8 +5,7 @@ import scipy.misc
 import os
 import time
 from utils.show_or_save import print_format, grey_and_rgb, show_and_save
-from utils.show_or_save import imshow
-import random
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -19,6 +18,9 @@ def compute_distance(original_image, disturb_image, function='l2'):
 
 def clamp_image(image, min, max):
     return torch.clamp(image, min, max)
+
+def clamp_image_tensor(image, min, max):
+    return torch.min(torch.max(min, image), max)
 
 
 class LikeAttack:
@@ -75,7 +77,11 @@ class LikeAttack:
         disturb_image, distance = self.binary_search_batch(disturb_image)
         dist = compute_distance(disturb_image, self.original_image, self.constraint)
         i = -1
+        distance_data =[]
+        queries_data = []
+
         while self.queries <= self.limited_query:
+
             i += 1
             start_time = time.time()
             self.cur_iter = i + 1
@@ -83,7 +89,8 @@ class LikeAttack:
 
             num_eval = int(self.init_num_eval * np.sqrt(i + 1))
             num_eval = int(min([num_eval, self.max_num_eval]))
-            grad = self.approximate_gradient(disturb_image, num_eval, delta, atk_level=(self.queries + 1)/self.limited_query)  # 可能限制溢出
+
+            grad = self.approximate_gradient(disturb_image, num_eval, delta, atk_level=self.atk_level)  # 可能限制溢出
             if self.queries > self.limited_query:
                 break
 
@@ -92,9 +99,11 @@ class LikeAttack:
             else:
                 update = grad
             if self.step_size_search == 'geometric_progression':
+
                 epsilon = self.geometric_progression_for_stepsize(disturb_image, update, dist)  # 可能限制溢出
                 if self.queries > self.limited_query:
                     break
+
                 disturb_image = clamp_image(disturb_image + epsilon * update, self.clip_min, self.clip_max)
                 disturb_image, distance = self.binary_search_batch(disturb_image)  # 可能限制溢出
                 if self.queries > self.limited_query:
@@ -102,6 +111,7 @@ class LikeAttack:
 
             elif self.step_size_search == 'grid_search':
                 pass
+
             dist = compute_distance(disturb_image, self.original_image, self.constraint)
             end_time = time.time()
             if self.verbose:
@@ -113,6 +123,8 @@ class LikeAttack:
                     'queries': self.queries,
                     'spend time': round((end_time - start_time), 3)
                 }
+                distance_data.append(dist.item())
+                queries_data.append(self.queries)
                 print_format(print_data)
                 # scipy.misc.imsave('./output/{}/{}/disturb_{}.jpg'.format(self.dataset, self.iter, i),
                 # grey_and_rgb(disturb_image[0].cpu().permute(1, 2, 0).numpy()))
@@ -124,14 +136,21 @@ class LikeAttack:
                     'target_label': int(self.target_label.item()) if self.target_label is not None else None,
                     'original_image': grey_and_rgb(self.original_image[0].cpu().permute(1, 2, 0).numpy()),
                     'original_label': int(self.original_label.item()),
+                    'dataset': self.dataset,
+                    'model_name': self.model.model_name,
+                    'constraint':self.constraint,
+                    'limited_query':self.limited_query
                 }
                 if self.target_label is not None:
                     data['target_image'] = grey_and_rgb(self.target_image[0].cpu().permute(1, 2, 0).numpy())
                     data['target_label'] = int(self.target_label.item())
-                show_and_save(data, self.dataset, show=self.show_flag,
+                show_and_save(data, self.dataset, distance_data, queries_data, show=self.show_flag,
                               path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),
-                              file_name='result_{}.png'.format(i))
-        return disturb_image
+                              file_name='result_{}.png'.format(i)
+                              )
+        # show_image(queries_data,distance_data)
+        return disturb_image,distance_data,queries_data
+        # return disturb_image
 
     def geometric_progression_for_stepsize(self, x, update, dist):
         epsilon = dist / np.sqrt(self.cur_iter)
@@ -140,15 +159,14 @@ class LikeAttack:
             new = x + epsilon * update
             return self.decision_function(new)
 
-        # x = self.try_like(x, 2)
         while self.queries <= self.limited_query and (not phi(epsilon)):
             epsilon /= 2.0
         return epsilon
 
     def approximate_gradient(self, sample, num_eval, delta, atk_level=None):
 
-        rv_raw = self.rv_generator.generate_ps(sample, num_eval, atk_level)  # 增加
-        _mask = torch.cat([self.pert_mask] * num_eval, 0).to(device)  # 虚假
+        rv_raw = self.rv_generator.generate_ps(sample, num_eval, atk_level).to(device)  # 增加
+        _mask = torch.cat([self.pert_mask] * num_eval, 0).to(device) # 虚假
         rv = rv_raw * _mask
 
         rv = rv / torch.sqrt(torch.sum(rv ** 2, dim=(1, 2, 3), keepdim=True))
@@ -183,10 +201,11 @@ class LikeAttack:
                     break
                 assert num_evals < 1e4, "Initialization failed!"
 
+            # 二分查找
             low = 0.0
             high = 1.0
             while high - low > 0.001:
-                mid = (high - low) * 0.618 + low
+                mid = (high + low) / 2.0
                 blended = (1 - mid) * self.original_image + mid * random_noise
 
                 success = self.decision_function(blended)
@@ -200,31 +219,31 @@ class LikeAttack:
         return initialization
 
     def binary_search_batch(self, disturb_image):
-
         distance = compute_distance(self.original_image, disturb_image, self.constraint)
         if self.constraint == 'linf':
-            highs = distance
-            threshold = np.minimum(distance * self.theta, self.theta)
+            highs = distance.item()
+            threshold = torch.min(distance * self.theta, torch.tensor(self.theta).to(device)).item()
         else:
             highs = 1.0
             threshold = self.theta
 
         lows = 0.0
+
         while (highs - lows) / threshold > 1:
-            mid = (highs - lows) * 0.618 + lows
-            # mid = (highs - lows) / 2 + lows
+            mid = (highs + lows) / 2
             mid_images = self.project(disturb_image, mid)
 
             decision = self.decision_function(mid_images)
             if self.queries > self.limited_query:
                 return disturb_image, distance  # 随意返回
             lows = np.where(~decision.cpu().numpy(), mid, lows)[0]
-            highs = np.where(decision.cpu().numpy(), mid, highs)[0]  # 说明alphas 太大
+            highs = np.where(decision.cpu().numpy(), mid, highs)[0]
 
         out_image = self.project(disturb_image, highs)
+
         dist = compute_distance(self.original_image, out_image, self.constraint)
 
-        dist = distance
+        dist = distance  # 这里应该是dist
         out_image = out_image
         return out_image, dist
 
@@ -232,7 +251,7 @@ class LikeAttack:
         if self.constraint == 'l2':
             return (1 - alphas) * self.original_image + alphas * disturb_image
         elif self.constraint == 'linf':
-            return clamp_image(disturb_image, self.original_image - alphas, self.original_image + alphas)
+            return clamp_image_tensor(disturb_image, self.original_image - alphas, self.original_image + alphas)
 
     def decision_function(self, image):
         self.queries += 1
@@ -253,15 +272,3 @@ class LikeAttack:
             else:
                 delta = self.d * self.theta * distance
         return delta
-
-    def try_like(self, disturb_image, times):
-        for i in range(times):
-            h = random.randint(0, disturb_image.shape[2] - 1)
-            w = random.randint(0, disturb_image.shape[2] - 1)
-            original = self.original_image[:, :, h, w]
-            disturb = disturb_image[:, :, h, w]
-            disturb_image[:, :, h, w] = original
-            if not self.decision_function(disturb_image):
-                disturb_image[:, :, h, w] = disturb
-
-        return disturb_image
