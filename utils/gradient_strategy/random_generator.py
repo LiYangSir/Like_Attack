@@ -1,5 +1,9 @@
 from utils.gradient_strategy.strategy import Strategy
 import torch
+from torch import nn
+from torch.functional import F
+from scipy import signal
+import numpy as np
 
 
 class RandomGenerator(Strategy):
@@ -16,3 +20,4 @@ class RandomGenerator(Strategy):
             ps = (torch.rand(*noise_shape) * 2 - 1).to(self.device)
 
         return ps
+

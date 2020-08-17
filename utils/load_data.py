@@ -26,7 +26,7 @@ class ImageData:
                 transforms.ToTensor(),
             ]))
 
-        self.data_loader = DataLoader(dataset,shuffle=False, batch_size=num_samples, num_workers=num_works)
+        self.data_loader = DataLoader(dataset, shuffle=False, batch_size=num_samples, num_workers=num_works)
 
 
 def split_data(x, y, model, num_classes=10):

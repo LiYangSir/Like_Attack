@@ -18,7 +18,6 @@ def video(dataset, network, iter, fps=2, size=(900, 400)):
     files.sort(key=lambda x: int(com.search(x).group()))
     files = tqdm(files, desc="Generate Video")
     for i in files:
-        files.set_description(f"Now Get {i}")
         img = cv2.imread(path + i)
         video_writer.write(img)
 

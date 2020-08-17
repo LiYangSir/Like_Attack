@@ -10,11 +10,13 @@ from utils.generate_model import ImageModel
 from torch import nn
 from torch import optim
 import time
+import pandas as pd
+import scipy.misc
 import torch
 import numpy as np
 from config.config import cifar100_classes
 from matplotlib import pyplot as plt
-
+from utils.attack_setting import load_pgen
 parser = argparse.ArgumentParser(description='PyTorch Black Attack Test')
 parser.add_argument('--data', metavar='DIR', default="./output", help='path to dataset')
 parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet152')
@@ -51,9 +53,41 @@ def imshow(img):
     plt.show()
 
 
-if __name__ == '__main__':
-    pass
+def load_data(path, time):
+    df = pd.read_excel(path)
+    for i in range(4):
+        if df.loc[i * 3, 1] == 'center':
+            queries = df.loc[i * 3 + 1, :].values
+            distance = df.loc[i * 3 + 2, :].values
+            np.save(f'npy/{time}_center_distance.npy', distance)
+            np.save(f'npy/{time}_center_queries.npy', queries)
+        elif df.loc[i * 3, 1] == 'DCT':
+            queries = df.loc[i * 3 + 1, :].values
+            distance = df.loc[i * 3 + 2, :].values
+            np.save(f'npy/{time}_DCT_distance.npy', distance)
+            np.save(f'npy/{time}_DCT_queries.npy', queries)
+        elif df.loc[i * 3, 1] == 'resize':
+            queries = df.loc[i * 3 + 1, :].values
+            distance = df.loc[i * 3 + 2, :].values
+            np.save(f'npy/{time}_resize_distance.npy', distance)
+            np.save(f'npy/{time}_resize_queries.npy', queries)
+        elif df.loc[i * 3, 1] == 'random':
+            queries = df.loc[i * 3 + 1, :].values
+            distance = df.loc[i * 3 + 2, :].values
+            np.save(f'npy/{time}_random_distance.npy', distance)
+            np.save(f'npy/{time}_random_queries.npy', queries)
 
+
+if __name__ == '__main__':
+    # p1 = torch.randn((5, 3, 224, 224))
+    # # [scipy.misc.imsave(f'./config/original_{i}.png', img.permute(1, 2, 0).numpy()) for i, img in enumerate(p1)]
+    # p_gen = load_pgen("cifar", 'resize', 'l2')
+    # result = p_gen.generate_ps(p1, 5)
+    # result = torch.mean(result * 0.6, 0).unsqueeze(0)
+    # [scipy.misc.imsave(f'./config/{i}.png', img.permute(1, 2, 0).numpy()) for i, img in enumerate(result)]
+    time = 'fouth'
+    load_data(f'csv/{time}.xlsx', time)
+    pass
 
     # dataset = datasets.MNIST(root='./data/', download=True, train=True, transform=transforms.Compose([
     #     transforms.ToTensor()]))
@@ -66,12 +100,3 @@ if __name__ == '__main__':
     # model = ImageModel("densenet", "cifar100")
     # pred = model.predict(target)
     # print(model)
-
-    # print_format("original_label", 15)
-    # generate_csv('./data/imagenet')
-    # image_dataset = ImageFolder(root=args.data, transform=transforms.ToTensor())
-    # image_loader = DataLoader(image_dataset, batch_size=args.batch_size)
-    # model = ImageModel(args.arch, args.dataset)
-    # for image, target in image_loader:
-    #     pred = model.predict(image)
-    #     print(pred)

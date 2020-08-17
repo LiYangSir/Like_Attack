@@ -4,20 +4,8 @@ import torch
 from utils.gradient_strategy.strategy import Strategy
 
 
-def get_2d_dct(x):
-    return fftpack.dct(fftpack.dct(x.T, norm='ortho').T, norm='ortho')
-
-
 def get_2d_idct(x):
     return fftpack.idct(fftpack.idct(x.T, norm='ortho').T, norm='ortho')
-
-
-def rgb_img_dct(img):
-    assert len(img.shape) == 3 and img.shape[0] == 3
-    signal = np.zeros_like(img)
-    for c in range(3):
-        signal[c] = get_2d_dct(img[c])
-    return signal
 
 
 def rgb_signal_idct(signal):
