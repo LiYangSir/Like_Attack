@@ -5,6 +5,8 @@ from utils.generate_video import video
 from utils.attack_setting import *
 from utils.show_or_save import *
 from utils import construct_model_and_data
+import os
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
 model_names = sorted(name for name in models.__dict__
                      if not name.startswith("__")
@@ -12,10 +14,10 @@ model_names = sorted(name for name in models.__dict__
                      and callable(models.__dict__[name]))
 
 parser = argparse.ArgumentParser(description='PyTorch Black Attack')
-parser.add_argument('--data', metavar='DIR', default="./data", help='path to dataset')
-parser.add_argument('--arch', '-a', metavar='ARCH', default='vgg', choices=model_names,
+parser.add_argument('--data', metavar='DIR', default="./data/", help='path to dataset')
+parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet', choices=model_names,
                     help='model architecture: ' + ' | '.join(model_names))
-parser.add_argument('--dataset', default='mnist', help='please choice dataset',
+parser.add_argument('--dataset', default='cifar10', help='please choice dataset',
                     choices=['mnist', 'cifar10', 'cifar100', 'imagenet'])
 parser.add_argument('--limited_query', type=int, default=1000, help='limited quety time')
 parser.add_argument('--constraint', type=str, choices=['l2', 'linf'], default='l2')
@@ -25,7 +27,7 @@ parser.add_argument('--num_classes', type=int, default=100)
 parser.add_argument('--show', default=False, action="store_true")
 parser.add_argument('--threadPool', default=False, action="store_true")
 parser.add_argument('--atk_level', type=int, default=999)
-parser.add_argument('--gradient_strategy', type=str, default="center", choices=['upsample', 'random', 'DCT', 'center'])
+parser.add_argument('--gradient_strategy', type=str, default="DCT", choices=['resize', 'random', 'DCT'])
 parser.add_argument('--stepsize_search', type=str, choices=['geometric_progression', 'grid_search'],
                     default='geometric_progression')
 args = parser.parse_args()
@@ -51,8 +53,7 @@ if __name__ == '__main__':
                                  rv_generator=p_gen, gamma=1.0, target_label=target_label, target_image=target_image,
                                  stepsize_search=args.stepsize_search, max_num_evals=1e4, init_num_evals=10,
                                  show_flag=args.show, atk_level=args.atk_level)
-        # disturb_image = like_attack.attack()
-        disturb_image, distance_data, queries_data = like_attack.attack()
-
+        disturb_image = like_attack.attack()
+        # save(target, disturb_image, args.dataset, args.arch)
         print("generate_video...")
         video(args.dataset, args.arch, i)
