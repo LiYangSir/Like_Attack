@@ -20,4 +20,3 @@ class RandomGenerator(Strategy):
             ps = (torch.rand(*noise_shape) * 2 - 1).to(self.device)
 
         return ps
-

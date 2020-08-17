@@ -52,7 +52,7 @@ if __name__ == '__main__':
                                  stepsize_search=args.stepsize_search, max_num_evals=1e4, init_num_evals=10,
                                  show_flag=args.show, atk_level=args.atk_level)
         # disturb_image = like_attack.attack()
-        disturb_image,distance_data,queries_data = like_attack.attack()
+        disturb_image, distance_data, queries_data = like_attack.attack()
 
         print("generate_video...")
         video(args.dataset, args.arch, i)

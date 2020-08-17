@@ -30,8 +30,7 @@ def show_and_save(data, dataset, distance_list, queries_list, show=False, path='
     a1 = fig.add_subplot(231)
     a2 = fig.add_subplot(232)
     a3 = fig.add_subplot(233)
-    a4 = fig.add_subplot(2,3,(4,6))
-
+    a4 = fig.add_subplot(2, 3, (4, 6))
 
     if dataset == 'mnist':
         classes = mnist_classes
@@ -49,11 +48,15 @@ def show_and_save(data, dataset, distance_list, queries_list, show=False, path='
     a1.set_yticks([])
 
     if data['target_label'] is None:
-        fig.suptitle('UnTarget {} ({} , {}) in Method CENTER'.format(data['constraint'], data['model_name'],data['dataset']))
+        fig.suptitle(
+            'UnTarget {} ({} , {}) in Method CENTER'.format(data['constraint'], data['model_name'], data['dataset']))
         a2.imshow(np.clip(1.0 - (data['disturb_image'] - data['original_image']), 0, 1))
         a2.set_title('sub_image')
     else:
-        fig.suptitle('Target: From {} To {} ,{} ({} , {}) in Method CENTER'.format(classes[data['original_label']], classes[data['target_label']], data['constraint'], data['model_name'],data['dataset']))
+        fig.suptitle('Target: From {} To {} ,{} ({} , {}) in Method CENTER'.format(classes[data['original_label']],
+                                                                                   classes[data['target_label']],
+                                                                                   data['constraint'],
+                                                                                   data['model_name'], data['dataset']))
         a2.imshow(np.clip(data['target_image'], 0, 1))
         a2.set_title('target_image')
         a2.set_xlabel('target_label : {}'.format(classes[data['target_label']]))
@@ -92,7 +95,7 @@ def grey_rgb(original_image):
         return original_image
 
 
-def save(target, disturb, dataset, network):
+def save(target, disturb, dataset, network, i):
     if dataset == 'mnist':
         image = torch.cat([grey_rgb(target), torch.zeros(1, 3, 28, 8).to(device), grey_rgb(disturb)], 3)
     elif dataset == 'cifar10':

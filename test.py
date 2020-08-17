@@ -17,6 +17,7 @@ import numpy as np
 from config.config import cifar100_classes
 from matplotlib import pyplot as plt
 from utils.attack_setting import load_pgen
+
 parser = argparse.ArgumentParser(description='PyTorch Black Attack Test')
 parser.add_argument('--data', metavar='DIR', default="./output", help='path to dataset')
 parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet152')

@@ -14,7 +14,6 @@ class UpSampleGenerator(Strategy):
         self.factor = factor
 
     def generate_ps(self, inp, num_eval, level=None):
-        ps = []
         shape = inp.shape
         p_small = torch.randn(num_eval, shape[1], int(shape[2] / self.factor), int(shape[3] / self.factor))
         m = nn.UpsamplingBilinear2d(scale_factor=2)
