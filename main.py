@@ -53,10 +53,6 @@ if __name__ == '__main__':
                                  show_flag=args.show, atk_level=args.atk_level)
         # disturb_image = like_attack.attack()
         disturb_image,distance_data,queries_data = like_attack.attack()
-        l = np.array(distance_data)
-        k = np.array(queries_data)
-        np.save('npy/vgg_mnist_1000_center_l2_untar/distance%d.npy' % i, l)
-        np.save('npy/vgg_mnist_1000_center_l2_untar/queries%d.npy' % i, k)
-        # save(target, disturb_image, args.dataset, args.arch)
+
         print("generate_video...")
         video(args.dataset, args.arch, i)
