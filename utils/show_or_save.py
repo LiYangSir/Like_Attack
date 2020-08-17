@@ -49,11 +49,11 @@ def show_and_save(data, dataset, distance_list, queries_list, show=False, path='
     a1.set_yticks([])
 
     if data['target_label'] is None:
-        fig.suptitle('UnTarget {} ({} , {}) in Method DCT'.format(data['constraint'], data['model_name'],data['dataset']))
+        fig.suptitle('UnTarget {} ({} , {}) in Method CENTER'.format(data['constraint'], data['model_name'],data['dataset']))
         a2.imshow(np.clip(1.0 - (data['disturb_image'] - data['original_image']), 0, 1))
         a2.set_title('sub_image')
     else:
-        fig.suptitle('Target: From {} To {} ,{} ({} , {}) in Method RESIZE'.format(classes[data['original_label']], classes[data['target_label']], data['constraint'], data['model_name'],data['dataset']))
+        fig.suptitle('Target: From {} To {} ,{} ({} , {}) in Method CENTER'.format(classes[data['original_label']], classes[data['target_label']], data['constraint'], data['model_name'],data['dataset']))
         a2.imshow(np.clip(data['target_image'], 0, 1))
         a2.set_title('target_image')
         a2.set_xlabel('target_label : {}'.format(classes[data['target_label']]))
@@ -70,7 +70,7 @@ def show_and_save(data, dataset, distance_list, queries_list, show=False, path='
     a4.plot(queries_list, distance_list, 'b')
     a4.set_xlabel("queries")
     a4.set_ylabel("distance")
-    a4.set_xlim([0, 2000])
+    a4.set_xlim([0, 1000])
     # a4.set_ylim([0, 11])
 
     fig.savefig(os.path.join(path, file_name))
