@@ -6,6 +6,7 @@ from utils.attack_setting import *
 from utils.show_or_save import *
 from utils import construct_model_and_data
 import os
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
 model_names = sorted(name for name in models.__dict__

@@ -2,7 +2,6 @@ from utils.gradient_strategy.dct_generator import DCTGenerator
 from utils.gradient_strategy.random_generator import RandomGenerator
 from utils.gradient_strategy.upsample_generator import UpSampleGenerator
 from utils.gradient_strategy.centerconv_generator import CenterConvGenerator
-from utils.gradient_strategy.KL_generator import KLGenerator
 from utils.attack_setting import *
 from utils.construct_model_data import construct_model_and_data
 from utils.generate_model import ImageModel

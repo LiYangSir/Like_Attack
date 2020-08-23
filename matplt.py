@@ -53,7 +53,7 @@ if __name__ == '__main__':
     #     plt.tick_params(labelsize=20)
     #     # plt.savefig("./t31.png")
     #     plt.show()
-    for i in ['first', 'second', 'third', 'fouth']:
+    for i in ['second']:
         for j in ['DCT', 'random', 'resize', 'center']:
             data = []
             if i == 'first' or i == 'third':
