@@ -4,7 +4,6 @@ from config.config import model_path
 import models
 import time
 from concurrent.futures import ThreadPoolExecutor
-from torchvision.models.densenet import _load_state_dict
 import re
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

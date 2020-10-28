@@ -86,18 +86,20 @@ if __name__ == '__main__':
     # result = p_gen.generate_ps(p1, 5)
     # result = torch.mean(result * 0.6, 0).unsqueeze(0)
     # [scipy.misc.imsave(f'./config/{i}.png', img.permute(1, 2, 0).numpy()) for i, img in enumerate(result)]
-    time = 'second'
-    load_data(f'csv/{time}.xlsx', time)
-    pass
+    # time = 'second'
+    # load_data(f'csv/{time}.xlsx', time)
+    # pass
 
     # dataset = datasets.MNIST(root='./data/', download=True, train=True, transform=transforms.Compose([
     #     transforms.ToTensor()]))
-    # dataset = datasets.CIFAR100(root='./data/', download=True, train=True, transform=transforms.Compose([
-    #     transforms.ToTensor()]))
-    # data_loader = DataLoader(dataset, shuffle=False, batch_size=5, num_workers=0)
-    # target, label = next(iter(data_loader))
-    # classes = [cifar100_classes[i.item()] for i in label]
-    # imshow(make_grid(target))
-    # model = ImageModel("densenet", "cifar100")
-    # pred = model.predict(target)
-    # print(model)
+    dataset = datasets.CIFAR100(root='./data/', download=True, train=True, transform=transforms.Compose([
+        transforms.ToTensor()]))
+    data_loader = DataLoader(dataset, shuffle=False, batch_size=16, num_workers=0)
+    target, label = next(iter(data_loader))
+    classes = [cifar100_classes[i.item()] for i in label]
+    imshow(make_grid(target))
+    model = ImageModel("resnet", "cifar100")
+    target = target.cuda()
+    pred = model.predict(target)
+    print(pred)
+    print(label)

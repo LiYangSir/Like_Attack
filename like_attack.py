@@ -4,7 +4,8 @@ import torch
 import scipy.misc
 import os
 import time
-from utils.show_or_save import print_format, grey_and_rgb, show_and_save
+from utils.show_or_save import print_format, grey_and_rgb, show_and_save, save_csv
+from utils.genetic_algorithm import compute
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -106,7 +107,7 @@ class LikeAttack:
                     break
 
                 disturb_image = clamp_image(disturb_image + epsilon * update, self.clip_min, self.clip_max)
-                disturb_image, distance = self.binary_search_batch(disturb_image)  # 可能限制溢出
+                disturb_image, distance = self.binary_search_batch(disturb_image)  # 可能限制溢出sdfd
                 if self.queries > self.limited_query:
                     break
 
@@ -143,10 +144,12 @@ class LikeAttack:
                 if self.target_label is not None:
                     data['target_image'] = grey_and_rgb(self.target_image[0].cpu().permute(1, 2, 0).numpy())
                     data['target_label'] = int(self.target_label.item())
-                show_and_save(data, self.dataset, distance_data, queries_data, show=self.show_flag,
-                              path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),
-                              file_name='result_{}.png'.format(i)
-                              )
+                # show_and_save(data, self.dataset, distance_data, queries_data, show=self.show_flag,
+                #               path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),
+                #               file_name='result_{}.png'.format(i))
+            save_csv(distance_data, queries_data,
+                     path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),
+                     file_name='result.csv'.format(i))
         return disturb_image, distance_data, queries_data
 
     def geometric_progression_for_stepsize(self, x, update, dist):
@@ -226,8 +229,19 @@ class LikeAttack:
 
         lows = 0.0
 
+        # # 使用遗传算法进行求解
+        # def prediction(x):
+        #     mid_images = self.project(disturb_image, x)
+        #     decision = self.decision_function(mid_images)
+        #     return decision
+        #
+        # highs = compute(10, prediction)
+
         while (highs - lows) / threshold > 1:
+            # 二分搜索算法
             mid = (highs + lows) / 2
+            # 黄金搜索法
+            # mid = (highs - lows) * 0.618 + lows
             mid_images = self.project(disturb_image, mid)
 
             decision = self.decision_function(mid_images)
@@ -237,7 +251,6 @@ class LikeAttack:
             highs = np.where(decision.cpu().numpy(), mid, highs)[0]
 
         out_image = self.project(disturb_image, highs)
-
         dist = compute_distance(self.original_image, out_image, self.constraint)
 
         dist = distance  # 这里应该是dist

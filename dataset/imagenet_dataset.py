@@ -8,7 +8,7 @@ import csv
 
 class ImageNetDataset(Dataset):
     def __init__(self, root, transform=None):
-        root = root + '.csv'
+        root = root + 'imagenet.csv'
         train_data_paths = []
         train_data_labels = []
         with open(root)as f:

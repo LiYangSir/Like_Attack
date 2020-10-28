@@ -25,6 +25,13 @@ def grey_and_rgb(original_image):
         return original_image
 
 
+def save_csv(distance_list, queries_list, path='./output', file_name='result.csv'):
+    distance_list = np.array(distance_list)
+    queries_list = np.array(queries_list)
+    result = np.vstack([distance_list, queries_list]).T
+    np.savetxt(os.path.join(path, file_name), result, '%s', delimiter=',')
+
+
 def show_and_save(data, dataset, distance_list, queries_list, show=False, path='./output', file_name='fig.png'):
     fig = plt.figure(figsize=(9, 8))
     a1 = fig.add_subplot(231)
