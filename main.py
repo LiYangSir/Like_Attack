@@ -14,21 +14,30 @@ model_names = sorted(name for name in models.__dict__
                      and name.islower()
                      and callable(models.__dict__[name]))
 
+"""
+注意修改以下几点
+    1. 数据集
+    2. 网络模型
+    3. 数据集
+    4. 输出类别
+    6. 梯度方式
+    5. 目标攻击还是无目标攻击
+"""
 parser = argparse.ArgumentParser(description='PyTorch Black Attack')
-parser.add_argument('--data', metavar='DIR', default="./data/", help='path to dataset')
-parser.add_argument('--arch', '-a', metavar='ARCH', default='densenet169', choices=model_names,
-                    help='model architecture: ' + ' | '.join(model_names))
-parser.add_argument('--dataset', default='imagenet', help='please choice dataset',
-                    choices=['mnist', 'cifar10', 'cifar100', 'imagenet'])
-parser.add_argument('--limited_query', type=int, default=100, help='limited quety time')
+
+parser.add_argument('--arch', '-a', metavar='ARCH', default='densenet169', choices=model_names)
+parser.add_argument('--dataset', default='imagenet', choices=['mnist', 'cifar10', 'cifar100', 'imagenet'])
+parser.add_argument('--num_classes', type=int, default=1000)
+parser.add_argument('--limited_query', type=int, default=1000)
 parser.add_argument('--constraint', type=str, choices=['l2', 'linf'], default='l2')
 parser.add_argument('--attack_type', type=str, choices=['targeted', 'untargeted'], default='untargeted')
+parser.add_argument('--gradient_strategy', type=str, default="DCT", choices=['resize', 'random', 'DCT'])
+
+parser.add_argument('--data', metavar='DIR', default="./data/", help='path to dataset')
 parser.add_argument('--num_samples', type=int, default=10)
-parser.add_argument('--num_classes', type=int, default=1000)
 parser.add_argument('--show', default=False, action="store_true")
 parser.add_argument('--threadPool', default=False, action="store_true")
 parser.add_argument('--atk_level', type=int, default=999)
-parser.add_argument('--gradient_strategy', type=str, default="DCT", choices=['resize', 'random', 'DCT'])
 parser.add_argument('--stepsize_search', type=str, choices=['geometric_progression', 'grid_search'],
                     default='geometric_progression')
 args = parser.parse_args()
