@@ -28,7 +28,7 @@ def clamp_image_tensor(image, min, max):
 class LikeAttack:
 
     def __init__(self, model, original_image, iter, limited_query=1000, clip_max=1, clip_min=0, constraint='l2',
-                 dataset='mnist', rv_generator=None, mask=None,
+                 dataset='mnist', rv_generator=None, mask=None, gradient_strategy=None,
                  gamma=1.0, target_label=None, target_image=None, stepsize_search='geometric_progression',
                  max_num_evals=1e4, init_num_evals=10, verbose=True, show_flag=False, atk_level=None):
         self.model = model
@@ -51,6 +51,7 @@ class LikeAttack:
         self.d = int(np.prod(original_image.shape))
         self.shape = original_image.shape
         self.cur_iter = 0
+        self.gradient_strategy = gradient_strategy
         self.queries = 0
         self.rv_generator = rv_generator
         self.show_flag = show_flag
@@ -65,8 +66,8 @@ class LikeAttack:
             self.pert_mask = mask
 
     def attack(self):
-        if not os.path.exists('./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter)):
-            os.makedirs('./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter))
+        if not os.path.exists('./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.gradient_strategy)):
+            os.makedirs('./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.gradient_strategy))
         # if not os.path.exists('./output/{}/result/'.format(self.dataset)):
         #     os.makedirs('./output/{}/{}/result/'.format(self.dataset, self.model.model_name))
         if self.verbose:
@@ -147,9 +148,9 @@ class LikeAttack:
                 # show_and_save(data, self.dataset, distance_data, queries_data, show=self.show_flag,
                 #               path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),
                 #               file_name='result_{}.png'.format(i))
-            save_csv(distance_data, queries_data,
-                     path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.iter),
-                     file_name='result.csv'.format(i))
+        save_csv(distance_data, queries_data,
+                 path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.gradient_strategy),
+                 file_name='result_{}.csv'.format(self.iter))
         return disturb_image, distance_data, queries_data
 
     def geometric_progression_for_stepsize(self, x, update, dist):

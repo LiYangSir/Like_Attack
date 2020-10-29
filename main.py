@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser(description='PyTorch Black Attack')
 parser.add_argument('--arch', '-a', metavar='ARCH', default='densenet169', choices=model_names)
 parser.add_argument('--dataset', default='imagenet', choices=['mnist', 'cifar10', 'cifar100', 'imagenet'])
 parser.add_argument('--num_classes', type=int, default=1000)
-parser.add_argument('--limited_query', type=int, default=1000)
+parser.add_argument('--limited_query', type=int, default=20000)
 parser.add_argument('--constraint', type=str, choices=['l2', 'linf'], default='l2')
 parser.add_argument('--attack_type', type=str, choices=['targeted', 'untargeted'], default='untargeted')
 parser.add_argument('--gradient_strategy', type=str, default="DCT", choices=['resize', 'random', 'DCT'])
@@ -62,7 +62,8 @@ if __name__ == '__main__':
                                  constraint=args.constraint, dataset=args.dataset, mask=None,
                                  rv_generator=p_gen, gamma=1.0, target_label=target_label, target_image=target_image,
                                  stepsize_search=args.stepsize_search, max_num_evals=1e4, init_num_evals=10,
-                                 show_flag=args.show, atk_level=args.atk_level)
+                                 show_flag=args.show, atk_level=args.atk_level,
+                                 gradient_strategy=args.gradient_strategy)
         disturb_image = like_attack.attack()
         # save(target, disturb_image, args.dataset, args.arch)
         # print("generate_video...")
