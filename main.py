@@ -58,12 +58,9 @@ if __name__ == '__main__':
             target_label = None
             target_image = None
         p_gen = load_pgen(args.dataset, args.gradient_strategy, args.constraint)
-        like_attack = LikeAttack(model, target, iter=i, limited_query=args.limited_query, clip_max=1, clip_min=0,
-                                 constraint=args.constraint, dataset=args.dataset, mask=None,
+        like_attack = LikeAttack(model, target, args=args, iter=i, clip_max=1, clip_min=0, mask=None,
                                  rv_generator=p_gen, gamma=1.0, target_label=target_label, target_image=target_image,
-                                 stepsize_search=args.stepsize_search, max_num_evals=1e4, init_num_evals=10,
-                                 show_flag=args.show, atk_level=args.atk_level,
-                                 gradient_strategy=args.gradient_strategy)
+                                 max_num_evals=1e4, init_num_evals=10)
         disturb_image = like_attack.attack()
         # save(target, disturb_image, args.dataset, args.arch)
         # print("generate_video...")

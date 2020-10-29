@@ -4,6 +4,7 @@ import torch
 import scipy.misc
 import os
 import time
+import datetime
 from utils.show_or_save import print_format, grey_and_rgb, show_and_save, save_csv
 from utils.genetic_algorithm import compute
 
@@ -27,23 +28,22 @@ def clamp_image_tensor(image, min, max):
 
 class LikeAttack:
 
-    def __init__(self, model, original_image, iter, limited_query=1000, clip_max=1, clip_min=0, constraint='l2',
-                 dataset='mnist', rv_generator=None, mask=None, gradient_strategy=None,
-                 gamma=1.0, target_label=None, target_image=None, stepsize_search='geometric_progression',
-                 max_num_evals=1e4, init_num_evals=10, verbose=True, show_flag=False, atk_level=None):
+    def __init__(self, model, original_image, args=None, iter=1, clip_max=1, clip_min=0,
+                 mask=None, rv_generator=None, gamma=1.0, target_label=None, target_image=None, max_num_evals=1e4,
+                 init_num_evals=10, verbose=True):
         self.model = model
         self.original_image = original_image
         self.iter = iter
-        self.dataset = dataset
-        self.limited_query = limited_query
+        self.dataset = args.dataset
+        self.limited_query = args.limited_query
         self.clip_max = clip_max
         self.clip_min = clip_min
         self.mask = mask
-        self.constraint = constraint
+        self.constraint = args.constraint
         self.gamma = gamma
         self.target_label = target_label
         self.target_image = target_image
-        self.step_size_search = stepsize_search
+        self.step_size_search = args.stepsize_search
         self.max_num_eval = max_num_evals
         self.init_num_eval = init_num_evals
         self.verbose = verbose
@@ -51,14 +51,15 @@ class LikeAttack:
         self.d = int(np.prod(original_image.shape))
         self.shape = original_image.shape
         self.cur_iter = 0
-        self.gradient_strategy = gradient_strategy
+        self.gradient_strategy = args.gradient_strategy
         self.queries = 0
+        self.original_queries = 0
         self.rv_generator = rv_generator
-        self.show_flag = show_flag
-        self.atk_level = atk_level
-        if constraint == 'l2':
+        self.show_flag = args.show
+        self.atk_level = args.atk_level
+        if self.constraint == 'l2':
             self.theta = gamma / (np.sqrt(self.d) * self.d)
-        elif constraint == 'linf':
+        elif self.constraint == 'linf':
             self.theta = gamma / (self.d ** 2)
         if mask is None:
             self.pert_mask = torch.ones(*original_image.shape)
@@ -79,10 +80,10 @@ class LikeAttack:
         disturb_image = self.initialize()
         disturb_image, distance = self.binary_search_batch(disturb_image)
         dist = compute_distance(disturb_image, self.original_image, self.constraint)
-        i = -1
+        i = 0
         distance_data = []
         queries_data = []
-
+        sum_spend_time = 0
         while self.queries <= self.limited_query:
 
             i += 1
@@ -119,12 +120,21 @@ class LikeAttack:
             end_time = time.time()
             if self.verbose:
                 disturb_label = self.model.predict(disturb_image)
+                count = self.queries - self.original_queries
+                self.original_queries = self.queries
+                sum_spend_time += (end_time - start_time)
+                avg_spend_time = sum_spend_time / i
+                eta = avg_spend_time * (self.limited_query - self.queries) / count
+                m, s = divmod(eta, 60)
+                h, m = divmod(m, 60)
+                eta = "%d:%02d:%02d" % (h, m, s)
                 print_data = {
                     'iteration': i,
                     'distance': round(dist.item(), 3),
                     'disturb_label': int(disturb_label.item()),
                     'queries': self.queries,
-                    'spend time': round((end_time - start_time), 3)
+                    'spend time': round((end_time - start_time), 3),
+                    'ETA': eta
                 }
                 distance_data.append(dist.item())
                 queries_data.append(self.queries)
@@ -150,7 +160,7 @@ class LikeAttack:
                 #               file_name='result_{}.png'.format(i))
         save_csv(distance_data, queries_data,
                  path='./output/{}/{}/{}'.format(self.dataset, self.model.model_name, self.gradient_strategy),
-                 file_name='result_{}.csv'.format(self.iter))
+                 file_name='result_{}_{}.csv'.format(self.constraint, self.iter))
         return disturb_image, distance_data, queries_data
 
     def geometric_progression_for_stepsize(self, x, update, dist):
